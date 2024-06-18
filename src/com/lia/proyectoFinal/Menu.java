@@ -1,9 +1,12 @@
+package com.lia.proyectoFinal;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -19,6 +22,10 @@ public class Menu extends JFrame implements ActionListener {
     private JButton btnForkJoin;
     private JButton btnExceSer;
 
+    private int opcion;
+    private int cantidadArchivos;
+
+
     private static final String ONEDRIVE_FOLDER_PATH = "C:\\Users\\DELL\\Documents\\DescargadorDeArchivo";
     String[] predefUrls = {
             "https://www.redalyc.org/pdf/6956/695676764003.pdf",
@@ -31,7 +38,7 @@ public class Menu extends JFrame implements ActionListener {
     public Menu() {
 
         setTitle("Descarga de Archivos");
-        setSize(600, 400);
+        setSize(600, 700);
         setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -45,7 +52,7 @@ public class Menu extends JFrame implements ActionListener {
         txtAreaArchivosDescargados = new JTextArea();
         txtAreaArchivosDescargados.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(txtAreaArchivosDescargados);
-        scrollPane.setBounds(20, 200, 560, 150);
+        scrollPane.setBounds(20, 220, 560, 400);
         add(scrollPane);
 
         JLabel lbCantidadArchivos = new JLabel("Cantidad de archivos a descargar:");
@@ -87,39 +94,38 @@ public class Menu extends JFrame implements ActionListener {
         btnLimpiar.setBounds(450, 170, 100, 30);
         btnLimpiar.addActionListener(this);
         add(btnLimpiar);
+
+        JButton btnCantidadArchivos = new JButton("Enviar Cantidad");
+        btnCantidadArchivos.setBounds(450, 120, 100, 30);
+        btnCantidadArchivos.addActionListener(e -> {
+            try {
+                cantidadArchivos = Integer.parseInt(txtCantidadArchivos.getText());
+                txtCantidadArchivos.setText("");
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Por favor, ingresa un número válido para el tamaño del arreglo.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        add(btnCantidadArchivos);
     }
+
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == btnSecuencia) {
-            if (txtCantidadArchivos.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(null, "Por favor, ingresa un número válido para la cantidad de Archivos.", "Error", JOptionPane.ERROR_MESSAGE);
-            }else{
-                runSequentialDownload();
-            }
+            opcion = 1;
         } else if (e.getSource() == btnForkJoin) {
-            if (txtCantidadArchivos.getText().isEmpty()){
-                JOptionPane.showMessageDialog(null, "Por favor, ingresa un número válido para la cantidad de Archivos.", "Error", JOptionPane.ERROR_MESSAGE);
-
-            }else {
-                runForkJoinDownload();
-            }
+            opcion = 2;
         } else if (e.getSource() == btnExceSer) {
-            if (txtCantidadArchivos.getText().isEmpty()){
-                JOptionPane.showMessageDialog(null, "Por favor, ingresa un número válido para la cantidad de Archivos.", "Error", JOptionPane.ERROR_MESSAGE);
-
-            }else{
-                int cantidadDeArchivos = Integer.parseInt((txtCantidadArchivos.getText()));
-                long startTime = System.nanoTime();
-                fileDownloader.runExecutorServiceDownload(cantidadDeArchivos, predefUrls);
-                long endTime = System.nanoTime();
-                long duration = (endTime - startTime) / 1000000; // Convertir a milisegundos
-                lbTiemExceSer.setText("Tiempo ExecutorService: " + duration + " ms");
-                displayDownloadedFiles(CloudFileDownloader.getDownloadedFile());
-            }
-
-        } else if (e.getSource() == btnLimpiar) {
-            clearTimes();
+            opcion = 3;
+        }else if (e.getSource() == btnLimpiar){
+            txtAreaArchivosDescargados.setText("");
+            txtCantidadArchivos.setText("");
+//            try {
+//                implementacionChat implementacionChat = new implementacionChat();
+//                implementacionChat.limpiarArregloDeArreglos();
+//            } catch (RemoteException ex) {
+//                throw new RuntimeException(ex);
+//            }
         }
     }
 
@@ -215,10 +221,6 @@ public class Menu extends JFrame implements ActionListener {
         }
 
         displayDownloadedFiles(downloadedFiles);
-
-
-
-
     }
 
 
@@ -259,14 +261,6 @@ public class Menu extends JFrame implements ActionListener {
         return null;
     }
 
-
-
-    private void clearTimes() {
-        txtAreaArchivosDescargados.setText("");
-    }
-
-
-
     private void displayDownloadedFiles(List<String> archivosDescargados) {
         SwingUtilities.invokeLater(() -> {
             StringBuilder stringBuilder = new StringBuilder();
@@ -282,6 +276,39 @@ public class Menu extends JFrame implements ActionListener {
         // Genera un nombre único para el archivo, por ejemplo, agregando un timestamp al nombre original
         long timestamp = System.currentTimeMillis();
         return timestamp + "_" + fileName;
+    }
+
+    public int getOpcion(){return this.opcion;}
+    public void setOpcion(int opcion){this.opcion = opcion;}
+    public int getCantidadArchivos(){return this.cantidadArchivos;}
+    public void setTxtAreaArchivosDescargados(String archivos){txtAreaArchivosDescargados.setText(archivos);}
+    public void setTiempo(String resultado) {
+        String[] partes = resultado.split("\\|");
+
+        // La segunda parte contiene el tiempo
+        if (partes.length > 1) {
+            String tiempo = partes[1];
+            if (getOpcion() == 1) {
+                lbTiempoSecuencial.setText(tiempo);
+            }else if(getOpcion() == 2){
+                lbTiemForkJoin.setText(tiempo);
+            }else if (getOpcion() == 3){
+                lbTiemExceSer.setText(tiempo);
+            }
+        }
+    }
+    public void mostrarArregloOrdenado(String resultado) {
+        StringBuilder sb = new StringBuilder();
+        String[] valores = resultado.split(" "); // Dividir el resultado por espacios
+
+//        for (int i = 0; i < valores.length; i++) {
+//            sb.append(valores[i]); // Agregar el valor actual
+//            if (i != valores.length - 1) {
+//                sb.append("\n"); // Agregar salto de línea si no es el último valor
+//            }
+//        }
+
+        txtAreaArchivosDescargados.setText(resultado);
     }
 
 }

@@ -1,3 +1,5 @@
+package com.lia.proyectoFinal;
+
 import javax.swing.*;
 
 public class Principal {
