@@ -89,7 +89,7 @@ public class CloudFileDownloader {
             stringBuilder.append(i + 1).append(". ").append(fileName).append("\n");
         }
         this.listaArchivos = stringBuilder.toString();
-        this.tiempo = "Tiempo ForkJoin: " + duration + " ms";
+        this.tiempo = "Tiempo Executor: " + duration + " ms";
 
         this.resultado = listaArchivos + "|"+ tiempo;
         return this.resultado;

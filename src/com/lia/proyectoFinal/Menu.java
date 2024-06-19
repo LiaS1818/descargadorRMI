@@ -24,6 +24,7 @@ public class Menu extends JFrame implements ActionListener {
 
     private int opcion;
     private int cantidadArchivos;
+    private boolean cantidadArchivosEnviada = false;
 
 
     private static final String ONEDRIVE_FOLDER_PATH = "C:\\Users\\DELL\\Documents\\DescargadorDeArchivo";
@@ -101,6 +102,8 @@ public class Menu extends JFrame implements ActionListener {
             try {
                 cantidadArchivos = Integer.parseInt(txtCantidadArchivos.getText());
                 txtCantidadArchivos.setText("");
+                cantidadArchivosEnviada = true;  // Marca que la cantidad ha sido enviada
+
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this, "Por favor, ingresa un número válido para el tamaño del arreglo.", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -120,12 +123,6 @@ public class Menu extends JFrame implements ActionListener {
         }else if (e.getSource() == btnLimpiar){
             txtAreaArchivosDescargados.setText("");
             txtCantidadArchivos.setText("");
-//            try {
-//                implementacionChat implementacionChat = new implementacionChat();
-//                implementacionChat.limpiarArregloDeArreglos();
-//            } catch (RemoteException ex) {
-//                throw new RuntimeException(ex);
-//            }
         }
     }
 
@@ -282,33 +279,39 @@ public class Menu extends JFrame implements ActionListener {
     public void setOpcion(int opcion){this.opcion = opcion;}
     public int getCantidadArchivos(){return this.cantidadArchivos;}
     public void setTxtAreaArchivosDescargados(String archivos){txtAreaArchivosDescargados.setText(archivos);}
-    public void setTiempo(String resultado) {
-        String[] partes = resultado.split("\\|");
+    public void setTiempo(String mensaje) {
+        if (mensaje != null) {
+            String[] partes = mensaje.split("\\|");
 
-        // La segunda parte contiene el tiempo
-        if (partes.length > 1) {
-            String tiempo = partes[1];
-            if (getOpcion() == 1) {
-                lbTiempoSecuencial.setText(tiempo);
-            }else if(getOpcion() == 2){
-                lbTiemForkJoin.setText(tiempo);
-            }else if (getOpcion() == 3){
-                lbTiemExceSer.setText(tiempo);
+            // Asegurarse de que hay al menos dos partes en el mensaje
+            if (partes.length > 1) {
+                String resultado = partes[1];
+
+                // Actualizar el tiempo correspondiente en función de la opción seleccionada
+                if (getOpcion() == 1) {
+                    lbTiempoSecuencial.setText(resultado);
+                } else if (getOpcion() == 2) {
+                    lbTiemForkJoin.setText(resultado);
+                } else if (getOpcion() == 3) {
+                    lbTiemExceSer.setText(resultado);
+                }
+            } else {
+                // Si el mensaje no está correctamente formateado, mostrar un mensaje de advertencia o manejar según tu lógica
+                System.err.println("Mensaje recibido no válido: " + mensaje);
             }
+        } else {
+            System.err.println("Mensaje recibido es nulo.");
         }
+
     }
-    public void mostrarArregloOrdenado(String resultado) {
-        StringBuilder sb = new StringBuilder();
-        String[] valores = resultado.split(" "); // Dividir el resultado por espacios
 
-//        for (int i = 0; i < valores.length; i++) {
-//            sb.append(valores[i]); // Agregar el valor actual
-//            if (i != valores.length - 1) {
-//                sb.append("\n"); // Agregar salto de línea si no es el último valor
-//            }
-//        }
 
-        txtAreaArchivosDescargados.setText(resultado);
+    public boolean isCantidadArchivosEnviada() {
+        return cantidadArchivosEnviada;
+    }
+
+    public void setCantidadArchivosEnviada(boolean cantidadArchivosEnviada) {
+        this.cantidadArchivosEnviada = cantidadArchivosEnviada;
     }
 
 }

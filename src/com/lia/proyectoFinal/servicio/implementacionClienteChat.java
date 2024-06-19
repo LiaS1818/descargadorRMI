@@ -24,25 +24,35 @@ public class implementacionClienteChat extends UnicastRemoteObject implements ch
     @Override
     public void mensajeCliente(String mensaje) throws RemoteException {
         System.err.println(mensaje);
+        menu.setTxtAreaArchivosDescargados(mensaje);
+    }
+
+    @Override
+    public void tiempo(String tiempo) throws RemoteException{
+        menu.setTiempo(tiempo);
+    }
+
+    @Override
+    public String getNombre() throws RemoteException {
+        return this.nombre;
     }
 
     @Override
     public void run() {
         while (true) {
             try {
-                while (menu.getOpcion() == 0) {
+                while (!menu.isCantidadArchivosEnviada()) {
                     Thread.sleep(100);
                 }
 
-                this.cantArchivos = menu.getCantidadArchivos();
+                if (menu.isCantidadArchivosEnviada()) {
+                    this.cantArchivos = menu.getCantidadArchivos();
+                    menu.setCantidadArchivosEnviada(false);  // Resetea la bandera después de actualizar la cantidad
+                }
                 this.opcion = menu.getOpcion();
 
                 String resultado = servidor.procesarSolicitud(cantArchivos, opcion, nombre);
-                menu.mostrarArregloOrdenado(resultado);
-                menu.setTiempo(resultado);
-
                 menu.setOpcion(0);
-
             } catch (RemoteException e) {
                 throw new RuntimeException(e);
             } catch (InterruptedException e) {

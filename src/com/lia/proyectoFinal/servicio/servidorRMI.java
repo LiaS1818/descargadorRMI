@@ -10,7 +10,7 @@ public class servidorRMI {
         try {
             Registry rmi = LocateRegistry.createRegistry(1005);
             rmi.rebind("Chat", (Remote) new implementacionChat());
-            System.out.println("SErvidor Activo");
+            System.out.println("Servidor Activo");
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
